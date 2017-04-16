@@ -5,12 +5,9 @@ from py532lib.frame import *
 from py532lib.constants import *
 import time
 import RPi.GPIO as GPIO
-import threading 
  
 pn532 = Pn532_i2c()
 pn532.SAMconfigure()
-
-
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(22, GPIO.IN)
@@ -53,7 +50,7 @@ def IRtimer ():
 		setYellowLED(1)
 
 
-GPIO.setup(17, GPIO.OUT) 
+GPIO.setup(17, GPIO.OUT)
 GPIO.setup(27, GPIO.OUT)
 GPIO.setup(4, GPIO.OUT)
 
@@ -110,71 +107,42 @@ def RFIDlookup (rfid_data):
 
 
 def roomBehaviour ():
-	#send booking verification to server. (can booking and verification be combined? )
-	print("Request: Verify room. ")
-
+	#send booking verification to server. (can this be combined with a booking request if nothing to verify?)
+	print("Request: Booking verification. ") ## Of this room, by this user. 
+	
 	## A response has arrived. 
-	reply = 1 # what will the response look like? string, bool?
-
-	if reply :
+	reply = 1 #what will the response look like? 
+	
+	if reply : 
 		print("Room is verified and ready for use. ")
 		setGreenLED(1)
 		return
 
 	print("Request: Book room. ")
+
 	reply = 1
 
 	if reply :
 		print("Room is booked, verified and ready for use. ")
 		setGreenLED(1)
 	else :
-		print("Room is already booked by others. ")
-		setRedLED(1)
+		setRedLED(1)		print("")
+
 	
-
-def room_userAccess (user_access):
-	if user_access : 
-		print("Access granted. ") 
-		roomBehaviour()
-	else :
-		print("Access denied. ")
-		setRedLED(1)
-
-
-
-class myThread (threading.Thread):
-	def __init__ (self, threadID, name):
-		threading.Thread.__init__(self)
-		daemon = True 		## Enables all threads stop at keyboardInterrupt. 
-		self.threadID = threadID 
-		self.name = name
-
-	def run (self): 
-	## Will finish execution and exit thread, if code is not e.g. while(true). 
-		print("Thread " +  self.name + " is active.")
-
-		
-
-		print("Thread " + self.name + " is terminated.")
-
-
-
 
 
 ## Main. 
 try: 
 	while True:
 		## step 5: combine rfid and leds. 
-		#card_data = readRFID()
-		#user_access = RFIDlookup(card_data)
-		#room_userAccess(user_access)
-
-		## step 6: threads for multiple simultaneous running program parts. 
 		card_data = readRFID()
 		user_access = RFIDlookup(card_data)
-		room_userAccess(user_access)
-		
-		
+
+		if user_access : 
+			print("Access granted.") 
+
+		## step 6: 
+
 
 		## todo: 
 		# solve polling/interrupt. careful around the blocking rfid read. threads?
