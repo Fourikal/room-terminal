@@ -10,8 +10,6 @@ import threading
 pn532 = Pn532_i2c()
 pn532.SAMconfigure()
 
-
-
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(22, GPIO.IN)
 
@@ -41,6 +39,7 @@ def IRtimer ():
 
 	if (ir_data == 1): ## Someone is present; restart timer. 
 		t_abandonnedRoom = t_resetIR
+		resetRoomLEDs()
 	else:
 		t_abandonnedRoom -= t_sleepTime
 
@@ -50,7 +49,7 @@ def IRtimer ():
 		print("Room is empty!")
 		
 		## Be aware they may sit very still; maybe give a sound/LED warning?. 
-		setYellowLED(1)
+		setRedLED(1)
 
 
 GPIO.setup(17, GPIO.OUT) 
@@ -99,7 +98,7 @@ def RFIDlookup (rfid_data):
 	setYellowLED(0)
 
 	## A response has arrived. 
-	reply = (rfid_data == card_2_id) ## Lets assume user with card_2_id is a registered user, and that card_1_id is not a user. 
+	reply = (rfid_data == card_2_id) #Lets assume user with card_2_id is a registered user, and that card_1_id is not a user. 
 
 	if reply : ## If the response is 'accepted' then green led. Else (means 'rejected') then red led. 
 		print("Found a user match. ")
@@ -153,37 +152,58 @@ class myThread (threading.Thread):
 	## Will finish execution and exit thread, if code is not e.g. while(true). 
 		print("Thread " +  self.name + " is active.")
 
-		
+		if (self.threadID == 1):
+			RFIDandLEDtest()
+		elif (self.threadID == 2):
+			IRtest()
 
 		print("Thread " + self.name + " is terminated.")
 
 
+ir_timer_is_active = 0
+
+def RFIDandLEDtest ():
+	while (True):
+		card_data = readRFID()
+		user_access = RFIDlookup(card_data)
+		room_userAccess(user_access)
+		if (user_access):
+			global ir_timer_is_active
+			ir_timer_is_active = 1
+		time.sleep(t_sleepTime)
+		resetRoomLEDs()
+	
+def IRtest ():
+	while (True):
+		if (ir_timer_is_active):
+			IRtimer()
+		time.sleep(t_sleepTime)
 
 
 
 ## Main. 
 try: 
-	while True:
-		## step 5: combine rfid and leds. 
+	## step 5: combine rfid and leds. 
+	#while True:
 		#card_data = readRFID()
 		#user_access = RFIDlookup(card_data)
 		#room_userAccess(user_access)
 
-		## step 6: threads for multiple simultaneous running program parts. 
-		card_data = readRFID()
-		user_access = RFIDlookup(card_data)
-		room_userAccess(user_access)
-		
-		
+	## step 6: threads for multiple simultaneous running program parts. 
+	thread_rfid = myThread(1, "RFID control")
+	thread_ir = myThread(2, "IR control")
 
-		## todo: 
-		# solve polling/interrupt. careful around the blocking rfid read. threads?
-		# insert server communication in this code. not my task to create; will wait for usable functions. 		
-		# create libraries/include files to tidy code, if time allows. 
-		# rfid shall also handle instant-booking. 
+	thread_rfid.start()
+	thread_ir.start()
 
-		time.sleep(t_sleepTime)
-		resetRoomLEDs()
+	## todo: 
+	# solve polling/interrupt. careful around the blocking rfid read. threads?
+	# insert server communication in this code. not my task to create; will wait for usable functions. 		
+	# create libraries/include files to tidy code, if time allows. 
+	# rfid shall also handle instant-booking. 
+
+	#time.sleep(t_sleepTime)
+	#resetRoomLEDs()
 
 
 except KeyboardInterrupt: 
