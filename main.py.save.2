@@ -1,10 +1,11 @@
+
+
 from py532lib.i2c import *
 from py532lib.frame import *
 from py532lib.constants import *
 import time
 import RPi.GPIO as GPIO
 import threading 
-from threading import Lock
  
 pn532 = Pn532_i2c()
 pn532.SAMconfigure()
@@ -28,10 +29,10 @@ def readIR ():
 	return ir_data
 
 
-t_resetIR = t_sleepTime * 3
+t_resetIR = t_sleepTime * 8
 t_abandonnedRoom = t_resetIR
 
-def runIRtimer ():
+def IRtimer ():
 ## Decides when the IR shall declare the room 'empty'. 
 	global t_abandonnedRoom
 	ir_data = readIR()
@@ -46,14 +47,9 @@ def runIRtimer ():
 		## Nobody has been present for some time; tell server to cancel remaining reservation time. 
 		#insert server communication here. 
 		print("Room is empty!")
-		setIRactivation(0)
-		t_abandonnedRoom = t_resetIR
-
+		
 		## Be aware they may sit very still; maybe give a sound/LED warning?. 
 		setRedLED(1)
-		time.sleep(t_sleepTime)
-		resetRoomLEDs()
-		
 
 
 GPIO.setup(17, GPIO.OUT) 
@@ -71,6 +67,13 @@ def setGreenLED (value):
 def setYellowLED (value):
 ## Takes boolean values 0/1. 
 	GPIO.output(4, value)
+
+def roomLEDs ():
+## Flash the LEDS on and off to indicate ok. 
+	print("Running roomLEDs(). ")
+	setRedLED(GPIO.input(17) ^ 1)
+	setGreenLED(GPIO.input(27) ^ 1)
+	setYellowLED(GPIO.input(4) ^ 1)
 
 def resetRoomLEDs ():
 	setRedLED(0)
@@ -125,7 +128,7 @@ def roomBehaviour ():
 		setRedLED(1)
 	
 
-def roomUserAccess (user_access):
+def room_userAccess (user_access):
 	if user_access : 
 		print("Access granted. ") 
 		roomBehaviour()
@@ -155,34 +158,22 @@ class myThread (threading.Thread):
 
 
 ir_timer_is_active = 0
-ir_mutex = Lock()
-
-def setIRactivation (value):
-## Boolean value 0/1. 
-	ir_mutex.acquire()
-	try :
-		global ir_timer_is_active
-		ir_timer_is_active = value
-	finally :
-		ir_mutex.release()
-
 
 def RFIDandLEDtest ():
 	while (True):
 		card_data = readRFID()
 		user_access = RFIDlookup(card_data)
-		roomUserAccess(user_access)
+		room_userAccess(user_access)
 		if (user_access):
-			#global ir_timer_is_active
-			#ir_timer_is_active = 1
-			setIRactivation(1)
+			global ir_timer_is_active
+			ir_timer_is_active = 1
 		time.sleep(t_sleepTime)
 		resetRoomLEDs()
 	
 def IRtest ():
 	while (True):
 		if (ir_timer_is_active):
-			runIRtimer()
+			IRtimer()
 		time.sleep(t_sleepTime)
 
 
@@ -208,9 +199,13 @@ try:
 	# create libraries/include files to tidy code, if time allows. 
 	# rfid shall also handle instant-booking. 
 
+
 	#time.sleep(t_sleepTime)
 	#resetRoomLEDs()
 
 
 except KeyboardInterrupt: 
 	GPIO.cleanup()
+
+
+
