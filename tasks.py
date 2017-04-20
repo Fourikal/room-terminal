@@ -1,18 +1,22 @@
 import threading 
-from threading import Lock
 import time
 
-#import rfid.py 
-#import berryclip.py 
-import server-liksom.py 
-import ir.py 
+import hardware
 
+import serverLiksom 
+import rfid
+import berryclip
 
-
-t_sleepTime = 3		## IR sensor has approximately 3 s signal when discovering movement. 
- 
 ir_timer_is_active = 0
-ir_mutex = Lock()
+ir_mutex = threading.Lock()
+
+def runTasks ():
+	thread_rfid = myThread(1, "RFID control")
+	thread_ir = myThread(2, "IR control")
+
+	thread_rfid.start()
+	thread_ir.start()
+
 
 
 class myThread (threading.Thread):
@@ -46,22 +50,24 @@ def setIRactivation (value):
 
 
 def RFIDandLEDtask ():
+	hardware.init()
+	task_period = 3
 	while (True):
-		card_data = readRFID()
-		user_access = RFIDlookup(card_data)
-		roomUserAccess(user_access)
+		card_data = rfid.read()
+		user_access = serverLiksom.RFIDlookup(card_data)
+		serverLiksom.roomUserAccess(user_access)
 		if (user_access):
-			#global ir_timer_is_active
-			#ir_timer_is_active = 1
 			setIRactivation(1)
-		time.sleep(t_sleepTime)
-		resetRoomLEDs()
+		time.sleep(task_period)
+		berryclip.resetRoomLEDs()
 	
 def IRtask ():
+	hardware.init()
+	task_period = 3         ## Should be at maximum 3 seconds. 
 	while (True):
 		if (ir_timer_is_active):
-			runIRtimer()
-		time.sleep(t_sleepTime)
+			serverLiksom.runIRtimer()
+		time.sleep(task_period)
 
 	
 	

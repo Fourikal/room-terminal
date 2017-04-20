@@ -1,24 +1,13 @@
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
 
-import mythreads.py 
+from tasks import runTasks
 
 
 
-def GPIOinit ():
-	GPIO.setmode(GPIO.BCM)
-	IRinit()
-	LEDinit()
- 
-GPIOinit()
 
 ## Main. 
 try: 
-	## step 6: threads for multiple simultaneous running program parts. 
-	thread_rfid = myThread(1, "RFID control")
-	thread_ir = myThread(2, "IR control")
-
-	thread_rfid.start()
-	thread_ir.start()
+	runTasks()
 
 	## todo: 
 	# solve polling/interrupt. careful around the blocking rfid read. threads?
@@ -26,5 +15,10 @@ try:
 	# rfid shall also handle instant-booking. 
 
 
+
+
+	#GPIO.cleanup()
+        
 except KeyboardInterrupt: 
-	GPIO.cleanup()
+        #GPIO.cleanup()
+        print("bye")
