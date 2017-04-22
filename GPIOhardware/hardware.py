@@ -1,7 +1,11 @@
 import RPi.GPIO as GPIO
 
-import ir
-import berryclip
+
+
+import GPIOhardware.ir as ir 
+import GPIOhardware.berryclip as berryclip
+
+
 
 def init ():
     GPIO.setmode(GPIO.BCM)
@@ -10,3 +14,5 @@ def init ():
 
 def close ():
     GPIO.cleanup()
+
+

@@ -1,7 +1,7 @@
 #import RPi.GPIO as GPIO
 
+#import GPIOhardware.hardware as hardware
 from tasks import runTasks
-
 
 
 
@@ -9,16 +9,22 @@ from tasks import runTasks
 try: 
 	runTasks()
 
+
+
 	## todo: 
-	# solve polling/interrupt. careful around the blocking rfid read. threads?
 	# insert server communication in this code. not my task to create; will wait for usable functions. 		
 	# rfid shall also handle instant-booking. 
+	# what happens when one scans card again after logged in?
+	# create a clearer state-machine view. (same behaviour)
 
 
-
-
+	
 	#GPIO.cleanup()
-        
+	#hardware.close()
+	
 except KeyboardInterrupt: 
         #GPIO.cleanup()
-        print("bye")
+	#hardware,close()
+	print("bye")
+
+

@@ -1,21 +1,15 @@
 import threading 
 import time
 
-import hardware
+import GPIOhardware.hardware as hardware
+import GPIOhardware.rfid as rfid
+import GPIOhardware.berryclip as berryclip
+import serverLiksom
 
-import serverLiksom 
-import rfid
-import berryclip
+
 
 ir_timer_is_active = 0
 ir_mutex = threading.Lock()
-
-def runTasks ():
-	thread_rfid = myThread(1, "RFID control")
-	thread_ir = myThread(2, "IR control")
-
-	thread_rfid.start()
-	thread_ir.start()
 
 
 
@@ -29,18 +23,43 @@ class myThread (threading.Thread):
 	def run (self): 
 	## Will finish execution and exit thread, if code is not e.g. while(true). 
 		print("Thread " +  self.name + " is active.")
+		
+		#if (self.threadID == 1):
+		#	task_RFIDandLED()
+		#elif (self.threadID == 2):
+		#	task_IR()
 
-		if (self.threadID == 1):
-			RFIDandLEDtask()
-		elif (self.threadID == 2):
-			IRtask()
-
+		try :
+			if (self.threadID == 1):
+				task_RFIDandLED()
+			elif (self.threadID == 2):
+				task_IR()
+		except :
+			print("Thread-zone!")
+		finally :
+			print("zone thread 2")
+		
 		print("Thread " + self.name + " is terminated.")
 
 
 
+def runTasks ():
+	## Setup and start extra threads.
+	#thread_rfid = myThread(1, "RFID control")
+	thread_ir = myThread(2, "IR control")
+
+	#thread_rfid.start()
+	thread_ir.start()
+
+	## Start main execution thread. 
+	print("RFID and LED is active.")
+	task_RFIDandLED()
+	while threading.active_count() > 0:
+		time.sleep(0.1)
+
+
 def setIRactivation (value):
-## Boolean value 0/1. 
+## Takes boolean value 0/1. 
 	ir_mutex.acquire()
 	try :
 		global ir_timer_is_active
@@ -49,9 +68,11 @@ def setIRactivation (value):
 		ir_mutex.release()
 
 
-def RFIDandLEDtask ():
+
+def task_RFIDandLED ():
 	hardware.init()
-	task_period = 3
+
+	task_period = 3         ## Timing for the LEDs, mainly. 
 	while (True):
 		card_data = rfid.read()
 		user_access = serverLiksom.RFIDlookup(card_data)
@@ -61,9 +82,9 @@ def RFIDandLEDtask ():
 		time.sleep(task_period)
 		berryclip.resetRoomLEDs()
 	
-def IRtask ():
+def task_IR ():
 	hardware.init()
-	task_period = 3         ## Should be at maximum 3 seconds. 
+	task_period = 3         ## Should be maximum 3 seconds. 
 	while (True):
 		if (ir_timer_is_active):
 			serverLiksom.runIRtimer()

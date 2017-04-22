@@ -1,12 +1,13 @@
 import RPi.GPIO as GPIO
 
+
+
 def init ():
         GPIO.setup(17, GPIO.OUT) 
         GPIO.setup(27, GPIO.OUT)
         GPIO.setup(4, GPIO.OUT)
 
-def close ():
-	GPIO.cleanup()
+
 
 def setRedLED (value):
 ## Takes boolean values 0/1. 

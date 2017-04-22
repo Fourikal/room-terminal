@@ -1,9 +1,10 @@
 import time
 
-import rfid
-import berryclip
+import GPIOhardware.rfid as rfid
+import GPIOhardware.berryclip as berryclip
+import GPIOhardware.ir as ir
 import tasks
-import ir
+
 
 
 t_sleepTime = 3
@@ -13,12 +14,15 @@ t_abandonnedRoom = t_resetIR
 card_1_id = b'K\x01\x01\x00\x04\x08\x04\xf0\xd0\xe6\x16'
 card_2_id = b'K\x01\x01\x00\x04\x08\x04\xe2\x0fE\xf2'
 
+
+
 def RFIDlookup (rfid_data):
 ## Shall not be used in product. Is a simulation tool. 
 ## Scans a card then asks the server if the user is registered. Returns boolean value 0/1. 
 	print("Request: User id lookup. ") ## Shall send to server. 
 
-	## Simulate waiting for response from server. (show yellow LED while waiting.)
+	## Simulate waiting for response from server.
+	#(show yellow LED while waiting.)
 	berryclip.setYellowLED(1)	
 	time.sleep(2) 	## Unrealistic wait time, but is easily visible. 
 	#insert server communication here. 
