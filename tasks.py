@@ -5,11 +5,11 @@ import GPIOhardware.hardware as hardware
 import GPIOhardware.rfid as rfid
 import GPIOhardware.berryclip as berryclip
 import serverLiksom
+import mutexes
 
 
 
-ir_timer_is_active = 0
-ir_mutex = threading.Lock()
+t_LEDs = 2	## LED timer; how long LED is active before turned off. 
 
 
 
@@ -24,22 +24,22 @@ class myThread (threading.Thread):
 	## Will finish execution and exit thread, if code is not e.g. while(true). 
 		print("Thread " +  self.name + " is active.")
 		
-		#if (self.threadID == 1):
-		#	task_RFIDandLED()
-		#elif (self.threadID == 2):
-		#	task_IR()
+		if (self.threadID == 1):
+			task_RFIDandLED()
+		elif (self.threadID == 2):
+			task_IR()
 
-		try :
-			if (self.threadID == 1):
-				task_RFIDandLED()
-			elif (self.threadID == 2):
-				task_IR()
-		except :
-			print("Thread-zone!")
-		finally :
-			print("zone thread 2")
+#		try :
+#			if (self.threadID == 1):
+#				task_RFIDandLED()
+#			elif (self.threadID == 2):
+#				task_IR()
+#		except :
+#			print("Thread exception!")
+#		finally :
+#			print("Thread " + self.name + " succesfully terminated")
 		
-		print("Thread " + self.name + " is terminated.")
+		#print("Thread " + self.name + " is terminated.")
 
 
 
@@ -47,7 +47,6 @@ def runTasks ():
 	## Setup and start extra threads.
 	#thread_rfid = myThread(1, "RFID control")
 	thread_ir = myThread(2, "IR control")
-
 	#thread_rfid.start()
 	thread_ir.start()
 
@@ -56,16 +55,6 @@ def runTasks ():
 	task_RFIDandLED()
 	while threading.active_count() > 0:
 		time.sleep(0.1)
-
-
-def setIRactivation (value):
-## Takes boolean value 0/1. 
-	ir_mutex.acquire()
-	try :
-		global ir_timer_is_active
-		ir_timer_is_active = value
-	finally :
-		ir_mutex.release()
 
 
 
@@ -78,18 +67,33 @@ def task_RFIDandLED ():
 		user_access = serverLiksom.RFIDlookup(card_data)
 		serverLiksom.roomUserAccess(user_access)
 		if (user_access):
-			setIRactivation(1)
+			mutexes.setIRactivation(1)
+			thread_ir = myThread(2, "IR control")
+			thread_ir.start()
 		time.sleep(task_period)
 		berryclip.resetRoomLEDs()
 	
 def task_IR ():
 	hardware.init()
-	task_period = 3         ## Should be maximum 3 seconds. 
-	while (True):
-		if (ir_timer_is_active):
-			serverLiksom.runIRtimer()
-		time.sleep(task_period)
 
+	task_period = 3         ## Should be maximum 3 seconds. 
+	#while (True):
+	#	if (ir_timer_is_active):
+	#		serverLiksom.runIRtimer()
+	#	time.sleep(task_period)
+
+	while ( serverLiksom.getIRtimer() > 0 ):	
+		serverLiksom.runIRtimer()
+		time.sleep(task_period)
+	
+	print("Room is empty!")
+
+	mutexes.setIRactivation(0)
+	serverLiksom.resetIRtimer()
+
+	berryclip.setRedLED(1)
+	time.sleep(t_LEDs)
+	berryclip.resetRoomLEDs()
 	
 	
 	
