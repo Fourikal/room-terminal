@@ -42,6 +42,7 @@ class myThread(threading.Thread):
 
 def on_message(client, userdata, msg):
     data = json.dumps(str(msg.payload))[2:-1]
+    print(data)
     if data[-1]['type']=='cardAsked':
         berryclip.setYellowLED(0)
         if data[-1]['response']=='confirmed' or data[-1]['response']=='booked':
@@ -71,14 +72,17 @@ def task_RFIDandLED():
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
+    client.connect("iot.eclipse.org", 1883, 60)
     task_period = 3  ## Timing for the LEDs, mainly.
     while (True):
         card_data = rfid.read()
         # SEND TO SERVER
         if card_data != None:
+            print("got data")
             data = {'roomId': roomId, 'RFID': card_data.hex(), 'command': 'cardask'}
             client.publish('/fk/rr', json.dumps(data))
             card_data=None
+        #time.sleep(2)
 
 '''	
 def task_IR ():
