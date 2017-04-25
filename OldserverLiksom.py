@@ -11,6 +11,10 @@ t_abandonnedRoom = t_resetIR
 card_1_id = b'K\x01\x01\x00\x04\x08\x04\xf0\xd0\xe6\x16'
 card_2_id = b'K\x01\x01\x00\x04\x08\x04\xe2\x0fE\xf2'
 
+""" anders start"""
+
+
+"""anders slutt"""
 
 
 def RFIDlookup (rfid_data):
