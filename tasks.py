@@ -69,10 +69,12 @@ def runTasks():
 
 def task_RFIDandLED():
     hardware.init()
+    time.sleep(1)
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect("iot.eclipse.org", 1883, 60)
+    
     task_period = 3  ## Timing for the LEDs, mainly.
     while (True):
         card_data = rfid.read()
@@ -82,7 +84,7 @@ def task_RFIDandLED():
             data = {'roomId': roomId, 'RFID': card_data.hex(), 'command': 'cardask'}
             client.publish('/fk/rr', json.dumps(data))
             card_data=None
-        #time.sleep(2)
+            time.sleep(2)
 
 '''	
 def task_IR ():
