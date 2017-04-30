@@ -2,17 +2,17 @@ import paho.mqtt.client as mqtt
 import json
 import time
 
-import software.LEDs as LEDs
 import data.roomData as roomData
-import software.mutexes as mutexes
-#import software.behaviour as behaviour 
-import tasks
+
+from . import LEDs as LEDs
+from . import mutexes as mutexes
+from . import tasks as tasks
 
 
 
-client=mqtt.Client()
-client.loop_start()
-client.connect(roomData.CHANNEL_CONNECT, 1883, 60)
+#client=mqtt.Client()
+#client.connect(roomData.CHANNEL_CONNECT, 1883, 60)
+#client.loop_start()
 
 
 
@@ -21,10 +21,9 @@ def on_connect (client, userdata, flags, rc):
 	client.subscribe(roomData.CHANNEL_SUB)
 
 def on_message (client, userdata, msg):
+	print("Received a message. ")
 	data = json.loads(msg.payload)
 	melding = data[0]
-
-#	behaviour.receiveMessage(melding)
 
 	if melding['type'] == 'error':
 		print("Error")
@@ -35,11 +34,9 @@ def on_message (client, userdata, msg):
 		LEDs.off()
 		if melding['response'] == 'confirmed' or data[-1]['response'] == 'booked':
 			LEDs.blinkGreen()
-			receiveUserAccept()
+#			receiveUserAccept()
 		if melding['response'] == 'denied':
 			LEDs.blinkRed()
-			receiveUserReject()
-
 
 def send_message (roomID, card_data, commandType):
 	print("comm.send")
@@ -47,24 +44,22 @@ def send_message (roomID, card_data, commandType):
 	data = {'roomId': roomID, 'RFID': card_data.hex(), 'command': commandType}
 	client.publish(roomData.CHANNEL_PUB, json.dumps(data))
 
-
+client=mqtt.Client()
 
 client.on_connect = on_connect
 client.on_message = on_message
 
+client.connect(roomData.CHANNEL_CONNECT, 1883, 60)
+client.loop_start()
+
+
 
 def receiveUserAccept ():
         ## Verified booking or Instant booking was received.
-        LEDs.off()
-        LEDs.blinkGreen
         mutexes.setIRactivation(1)
         thread_ir = tasks.myThread(2, "IR control")
         thread_ir.start()
 
-def receiveUserReject ():
-        ## User cannot book the room.
-        LEDs.off()
-        LEDs.blinkRed()
 
 
 
