@@ -3,6 +3,7 @@ import time
 import paho.mqtt.client as mqtt
 import json
 
+import OldserverLiksom
 import GPIOhardware.hardware as hardware
 import GPIOhardware.rfid as rfid
 import GPIOhardware.berryclip as berryclip
@@ -65,6 +66,16 @@ def runTasks():
     ## Start main execution thread.
     print("RFID and LED is active.")
     task_RFIDandLED()
+
+
+
+def task_noServRFIDandLED():
+    hardware.init()
+    task_period = 3  ## Timing for the LEDs, mainly.
+    while (True):
+	card_data = rfid.read()
+	OldserverLiksom.RFIDlookup(card_data)
+	
 
 
 def task_RFIDandLED():

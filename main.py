@@ -28,11 +28,11 @@ def on_message(client, userdata, msg):
                 berryclip.setYellowLED(0)
                 if melding['response']=='confirmed' or data[-1]['response']=='booked':
                     berryclip.setGreenLED(1)
-                    time.sleep(1)
+                    time.sleep(2)
                     berryclip.setGreenLED(0)
                 if melding['response']=='denied':
                     berryclip.setRedLED(1)
-                    time.sleep(1)
+                    time.sleep(2)
                     berryclip.setRedLED(0)
 
 def on_connect(client, userdata, flags, rc):
