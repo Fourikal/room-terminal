@@ -6,6 +6,7 @@ def init ():
         GPIO.setup(17, GPIO.OUT) 
         GPIO.setup(27, GPIO.OUT)
         GPIO.setup(4, GPIO.OUT)
+        resetRoomLEDs()
 
 
 
