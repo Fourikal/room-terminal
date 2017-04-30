@@ -28,6 +28,7 @@ def on_message (client, userdata, msg):
 			LEDs.blinkRed()
 
 def send_message (roomID, card_data, commandType):
+	LEDs.setYellow(1)
 	data = {'roomId': roomID, 'RFID': card_data.hex(), 'command': commandType}
 	client.publish(roomData.CHANNEL_PUB, json.dumps(data))
 
