@@ -23,6 +23,9 @@ def blinkGreen ():
         time.sleep(t_LEDs)
         berryclip.setGreenLED(0)
 
+def setYellow (value):
+	berryclip.setYellowLED(value)
+
 def off ():
         berryclip.resetRoomLEDs()
 
