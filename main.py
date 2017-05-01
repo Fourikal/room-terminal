@@ -1,16 +1,12 @@
-import RPi.GPIO as GPIO
-
 import time
+#import RPi.GPIO as GPIO
 
 import GPIOhardware.hardware as hardware
 #import GPIOhardware.rfid as rfid
-#import communication.communication as communication
+#import software.communication as communication
 #import data.roomData as roomData
-#import GPIOhardware.berryclip as berryclip
-#from tasks import runTasks
-import software.tasks as tasks
 #import software.mutexes as mutexes
-#import communication.outgoing as outgoing
+import software.tasks as tasks
 
 
 
