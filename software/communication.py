@@ -10,14 +10,8 @@ from . import tasks as tasks
 
 
 
-#client=mqtt.Client()
-#client.connect(roomData.CHANNEL_CONNECT, 1883, 60)
-#client.loop_start()
-
-
-
 def on_connect (client, userdata, flags, rc):
-	print("Connected with result code " + str(rc))
+	print("Connected with result code " + str(rc) + ". ")
 	client.subscribe(roomData.CHANNEL_SUB)
 
 def on_message (client, userdata, msg):
@@ -26,23 +20,25 @@ def on_message (client, userdata, msg):
 	melding = data[0]
 
 	if melding['type'] == 'error':
-		print("Error")
+		print("Message type: Error. ")
 		time.sleep(1)
 		LEDs.off()
 	elif melding['type'] == 'cardAsked':
-		print("Cardask")
+		print("Message type: Card Asked. ")
 		LEDs.off()
 		if melding['response'] == 'confirmed' or data[-1]['response'] == 'booked':
 			LEDs.blinkGreen()
-#			receiveUserAccept()
+			receiveUserAccept()
 		if melding['response'] == 'denied':
 			LEDs.blinkRed()
 
 def send_message (roomID, card_data, commandType):
-	print("comm.send")
+	print("Sending a message. ")
 	LEDs.setYellow(1)
 	data = {'roomId': roomID, 'RFID': card_data.hex(), 'command': commandType}
 	client.publish(roomData.CHANNEL_PUB, json.dumps(data))
+
+
 
 client=mqtt.Client()
 
