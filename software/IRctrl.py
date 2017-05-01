@@ -6,7 +6,7 @@ import GPIOhardware.ir as ir
 ## The timeout then happens after 3 * t_resetIR seconds. 
 ## The total prototype timeout shall be 15 minutes (t_reset=300). 
 # TODO: 3 is an unrealistic, low value. Used for debug. 
-t_resetIR = 3	
+t_resetIR = 300	
 
 t_abandonnedRoom = t_resetIR
 
